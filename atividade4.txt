@@ -1,0 +1,40 @@
+Objetivo:
+Aplicar os conceitos de polimorfismo, herança, sobrecarga, modificadores
+de acesso, exceções, coleções, JDBC, Stream e Interfaces Gráficas em
+Java para modelar o início de um sistema de notas escolar.
+Enunciado:
+Crie um programa em Java que simule um sistema de notas escolar com as
+funcionalidades básicas implementadas.
+Seu programa deve estar inserido como base no pacote:
+org.teiacoltec.poo.tp4
+Muita atenção a este pacote! Seu trabalho será descompactado neste pacote
+base para ser testado e o método main da classe Main será chamado.
+Não vou deixar de testar caso seu programa não esteja lá, mas forçar
+adaptação implicará em perda de pontos.
+Requisitos:
+1. Persistência:
+o Implemente a persistência dos dados do sistema substituindo a
+Serialização pelas classes DAO utilizando JDBC.
+2. Interação com o usuário
+o Substitua a interação com o usuário anterior (utilizando console)
+por telas desenvolvidas com a biblioteca gráfica Swing.
+
+Implementação realizada:
+- Código fonte no pacote `org.teiacoltec.poo.tp4` em `SistemaNotasEscolar/src/main/java`
+- Persistência via padrão DAO com camada JDBC e fallback em memória
+- UI Swing com tela de Login e janela principal com menus
+- Classes principais: `Main`, `AppContext`, `ui.LoginFrame`, `ui.MainFrame`
+- DAOs: `dao/*` com implementações `jdbc/*` e `memory/*`
+- Modelos: `Pessoa`, `Aluno`, `Professor`, `Monitor`, `Turma`, `Atividade`, `Nota`, `Tarefa`
+- Exceções específicas mantidas e reutilizadas
+- Testes básicos em `SistemaNotasEscolar/src/test/java/org/teiacoltec/poo/tp4/TestRunner.java`
+
+Como executar:
+1. Compile: `javac -d target/classes SistemaNotasEscolar/src/main/java/org/teiacoltec/poo/tp4/**/*.java SistemaNotasEscolar/src/test/java/org/teiacoltec/poo/tp4/TestRunner.java`
+2. Executar aplicação: `java -cp target/classes org.teiacoltec.poo.tp4.Main`
+3. Executar testes: `java -cp target/classes org.teiacoltec.poo.tp4.TestRunner`
+
+Observações:
+- A camada JDBC usa SQLite (`jdbc:sqlite:SistemaNotasEscolar/notas.db`). Caso o driver não esteja disponível, o sistema funciona com persistência em memória.
+- Dados iniciais são gerados automaticamente (logins: `prof.joao`/`123456`, `maria.santos`/`senha123`, `pedro.monitor`/`monitor123`).
+- A implementação segue as boas práticas da atividade 3 (POO, Streams, encapsulamento) e substitui a interação via console por Swing.
