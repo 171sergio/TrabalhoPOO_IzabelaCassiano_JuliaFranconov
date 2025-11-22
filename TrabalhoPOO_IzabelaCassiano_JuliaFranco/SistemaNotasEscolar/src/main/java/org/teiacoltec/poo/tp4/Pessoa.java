@@ -28,6 +28,16 @@ public abstract class Pessoa {
         this.senhaCriptografada = criptografarSenha(senha);
     }
 
+    public Pessoa(String cpf, String nome, Date nascimento, String email, String endereco, String login, String senha, boolean senhaJaCriptografada) {
+        this.cpf = cpf;
+        this.nome = nome;
+        this.nascimento = nascimento;
+        this.email = email;
+        this.endereco = endereco;
+        this.login = login;
+        this.senhaCriptografada = senhaJaCriptografada ? senha : criptografarSenha(senha);
+    }
+
     private String criptografarSenha(String senha) {
         try {
             MessageDigest digest = MessageDigest.getInstance("SHA-256");
@@ -70,4 +80,5 @@ public abstract class Pessoa {
     public String getLogin() { return login; }
     public void setLogin(String login) { this.login = login; }
     public void alterarSenha(String novaSenha) { this.senhaCriptografada = criptografarSenha(novaSenha); }
+    public String getSenhaCriptografada() { return this.senhaCriptografada; }
 }

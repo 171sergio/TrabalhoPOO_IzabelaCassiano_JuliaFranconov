@@ -42,6 +42,7 @@ public class AppContext {
             notaDAO = new NotaDAOInMemory(mem);
             tarefaDAO = new TarefaDAOInMemory(mem);
         } catch (Exception e) {
+            System.err.println("Erro no JDBC: " + e.getMessage());
             InMemoryStore mem = new InMemoryStore();
             pessoaDAO = new PessoaDAOInMemory(mem);
             turmaDAO = new TurmaDAOInMemory(mem);

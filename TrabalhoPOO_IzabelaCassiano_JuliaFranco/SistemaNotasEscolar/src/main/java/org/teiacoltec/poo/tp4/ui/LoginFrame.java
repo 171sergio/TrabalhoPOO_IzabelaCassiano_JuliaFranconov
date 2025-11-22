@@ -42,7 +42,7 @@ public class LoginFrame extends JFrame {
         add(form, BorderLayout.CENTER);
         add(actions, BorderLayout.SOUTH);
         add(statusLabel, BorderLayout.NORTH);
-        setSize(360, 200);
+        pack();
         setLocationRelativeTo(null);
     }
 

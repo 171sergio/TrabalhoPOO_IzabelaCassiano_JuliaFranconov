@@ -16,6 +16,13 @@ public class Monitor extends Pessoa {
         this.curso = curso;
     }
 
+    public Monitor(String cpf, String nome, Date nascimento, String email, String endereco,
+            String matricula, String curso, String login, String senha, boolean senhaJaCriptografada) {
+        super(cpf, nome, nascimento, email, endereco, login, senha, senhaJaCriptografada);
+        this.matricula = matricula;
+        this.curso = curso;
+    }
+
     public Monitor(String nome, String matricula, String login, String senha) {
         super("000.000.000-00", nome, new Date(), "email@exemplo.com", "Endereço não informado", login, senha);
         this.matricula = matricula;

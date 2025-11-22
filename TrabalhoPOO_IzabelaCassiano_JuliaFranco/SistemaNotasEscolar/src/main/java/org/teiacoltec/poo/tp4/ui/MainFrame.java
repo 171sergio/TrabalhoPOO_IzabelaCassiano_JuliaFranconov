@@ -16,11 +16,11 @@ public class MainFrame extends JFrame {
         super("Sistema de Notas - Principal");
         this.ctx = ctx;
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        setSize(800, 600);
-        setLocationRelativeTo(null);
         setLayout(new BorderLayout());
         setJMenuBar(criarMenu());
         add(new JLabel("Bem-vindo(a) ao Sistema de Notas"), BorderLayout.CENTER);
+        pack();
+        setLocationRelativeTo(null);
     }
 
     private JMenuBar criarMenu() {
