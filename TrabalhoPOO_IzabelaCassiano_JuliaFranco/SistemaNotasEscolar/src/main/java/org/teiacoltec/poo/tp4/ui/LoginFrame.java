@@ -1,7 +1,16 @@
-package org.teiacoltec.poo.tp4.ui;
+package org.teiacoltec.poo.tp4.ui; // Pacote correto
 
-import org.teiacoltec.poo.tp4.*;
+// Imports explícitos ajudam a resolver o erro "cannot find symbol"
+import org.teiacoltec.poo.tp4.AppContext; 
+import org.teiacoltec.poo.tp4.Autenticacao;
+import org.teiacoltec.poo.tp4.CredenciaisInvalidasException;
+import org.teiacoltec.poo.tp4.Pessoa;
 import org.teiacoltec.poo.tp4.dao.PessoaDAO;
+
+import javax.swing.*;
+import java.awt.*;
+import java.util.List;
+// ... resto do código
 
 import javax.swing.*;
 import java.awt.*;

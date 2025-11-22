@@ -14,9 +14,10 @@ if not exist target\classes (
     )
 )
 
-echo Iniciando o sistema...
+echo Iniciando o sistema (TP4)...
 echo.
-java -cp target\classes org.teiacoltec.poo.tp3.Main
+:: Alterado de tp3 para tp4
+java -cp target\classes;lib/* org.teiacoltec.poo.tp4.Main
 
 echo.
 echo Sistema encerrado.
