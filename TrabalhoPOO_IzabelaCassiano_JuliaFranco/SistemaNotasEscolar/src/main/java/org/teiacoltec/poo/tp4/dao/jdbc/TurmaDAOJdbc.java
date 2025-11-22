@@ -1,6 +1,9 @@
 package org.teiacoltec.poo.tp4.dao.jdbc;
 
-import org.teiacoltec.poo.tp4.*;
+import org.teiacoltec.poo.tp4.Turma;
+import org.teiacoltec.poo.tp4.Pessoa;
+import org.teiacoltec.poo.tp4.PessoaJaParticipanteException;
+import org.teiacoltec.poo.tp4.PessoaNaoEncontradaException;
 import org.teiacoltec.poo.tp4.dao.TurmaDAO;
 
 import java.sql.*;

@@ -1,6 +1,9 @@
 package org.teiacoltec.poo.tp4.dao.jdbc;
 
-import org.teiacoltec.poo.tp4.*;
+import org.teiacoltec.poo.tp4.Pessoa;
+import org.teiacoltec.poo.tp4.Aluno;
+import org.teiacoltec.poo.tp4.Professor;
+import org.teiacoltec.poo.tp4.Monitor;
 import org.teiacoltec.poo.tp4.dao.PessoaDAO;
 
 import java.sql.*;

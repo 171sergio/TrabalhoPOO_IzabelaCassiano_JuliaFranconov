@@ -1,9 +1,18 @@
 package org.teiacoltec.poo.tp4;
 
-import org.teiacoltec.poo.tp4.dao.*;
+import org.teiacoltec.poo.tp4.dao.PessoaDAO;
+import org.teiacoltec.poo.tp4.dao.TurmaDAO;
+import org.teiacoltec.poo.tp4.dao.AtividadeDAO;
+import org.teiacoltec.poo.tp4.dao.NotaDAO;
+import org.teiacoltec.poo.tp4.dao.TarefaDAO;
 import org.teiacoltec.poo.tp4.dao.jdbc.PessoaDAOJdbc;
 import org.teiacoltec.poo.tp4.dao.jdbc.TurmaDAOJdbc;
-import org.teiacoltec.poo.tp4.dao.memory.*;
+import org.teiacoltec.poo.tp4.dao.memory.InMemoryStore;
+import org.teiacoltec.poo.tp4.dao.memory.PessoaDAOInMemory;
+import org.teiacoltec.poo.tp4.dao.memory.TurmaDAOInMemory;
+import org.teiacoltec.poo.tp4.dao.memory.AtividadeDAOInMemory;
+import org.teiacoltec.poo.tp4.dao.memory.NotaDAOInMemory;
+import org.teiacoltec.poo.tp4.dao.memory.TarefaDAOInMemory;
 import org.teiacoltec.poo.tp4.infra.ConnectionFactory;
 import org.teiacoltec.poo.tp4.infra.SchemaInitializer;
 

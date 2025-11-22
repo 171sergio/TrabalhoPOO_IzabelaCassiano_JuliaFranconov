@@ -1,6 +1,10 @@
 package org.teiacoltec.poo.tp4.dao.memory;
 
-import org.teiacoltec.poo.tp4.*;
+import org.teiacoltec.poo.tp4.Pessoa;
+import org.teiacoltec.poo.tp4.Turma;
+import org.teiacoltec.poo.tp4.Atividade;
+import org.teiacoltec.poo.tp4.Nota;
+import org.teiacoltec.poo.tp4.Tarefa;
 
 import java.util.ArrayList;
 import java.util.List;
