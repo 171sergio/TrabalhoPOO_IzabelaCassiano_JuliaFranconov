@@ -1,12 +1,11 @@
 package org.teiacoltec.poo.tp4.ui;
 
 import org.teiacoltec.poo.tp4.*;
-
 import javax.swing.*;
 import java.awt.*;
-import java.util.Date;
 import java.util.List;
 import java.util.ArrayList;
+import java.util.Date;
 
 public class MainFrame extends JFrame {
 
@@ -22,29 +21,22 @@ public class MainFrame extends JFrame {
         JPanel painelPrincipal = new JPanel();
         painelPrincipal.setLayout(new BoxLayout(painelPrincipal, BoxLayout.Y_AXIS));
         painelPrincipal.setBorder(BorderFactory.createEmptyBorder(50, 50, 50, 50));
-
         JLabel titulo = new JLabel("Sistema de Gestão Escolar");
         titulo.setFont(new Font("Arial", Font.BOLD, 24));
         titulo.setAlignmentX(Component.CENTER_ALIGNMENT);
-
         String nomeUsuario = (ctx.autenticacao.getUsuarioLogado() != null)
                 ? ctx.autenticacao.getUsuarioLogado().getNome() : "Usuário";
-
         JLabel subtitulo = new JLabel("Bem-vindo, " + nomeUsuario);
         subtitulo.setFont(new Font("Arial", Font.PLAIN, 16));
         subtitulo.setAlignmentX(Component.CENTER_ALIGNMENT);
-
         JLabel info = new JLabel("Utilize o menu acima para gerenciar Turmas, Alunos e Notas.");
         info.setAlignmentX(Component.CENTER_ALIGNMENT);
-
         painelPrincipal.add(titulo);
         painelPrincipal.add(Box.createRigidArea(new Dimension(0, 20)));
         painelPrincipal.add(subtitulo);
         painelPrincipal.add(Box.createRigidArea(new Dimension(0, 40)));
         painelPrincipal.add(info);
-
         add(painelPrincipal, BorderLayout.CENTER);
-
         pack();
         setSize(800, 600);
         setLocationRelativeTo(null);
@@ -52,7 +44,6 @@ public class MainFrame extends JFrame {
 
     private JMenuBar criarMenu() {
         JMenuBar bar = new JMenuBar();
-
         JMenu usuarios = new JMenu("Usuários");
         JMenuItem listarUsuarios = new JMenuItem("Listar");
         listarUsuarios.addActionListener(e -> mostrarUsuarios());
@@ -60,7 +51,6 @@ public class MainFrame extends JFrame {
         criarAluno.addActionListener(e -> criarAluno());
         usuarios.add(listarUsuarios);
         usuarios.add(criarAluno);
-
         JMenu turmas = new JMenu("Turmas");
         JMenuItem listarTurmas = new JMenuItem("Listar");
         listarTurmas.addActionListener(e -> mostrarTurmas());
@@ -68,7 +58,6 @@ public class MainFrame extends JFrame {
         criarTurma.addActionListener(e -> criarTurma());
         turmas.add(listarTurmas);
         turmas.add(criarTurma);
-
         JMenu atividades = new JMenu("Atividades");
         JMenuItem listarAtividades = new JMenuItem("Listar");
         listarAtividades.addActionListener(e -> mostrarAtividades());
@@ -76,7 +65,6 @@ public class MainFrame extends JFrame {
         criarAtividade.addActionListener(e -> criarAtividade());
         atividades.add(listarAtividades);
         atividades.add(criarAtividade);
-
         JMenu notas = new JMenu("Notas");
         JMenuItem lancarNota = new JMenuItem("Lançar Nota");
         lancarNota.addActionListener(e -> lancarNota());
@@ -84,20 +72,10 @@ public class MainFrame extends JFrame {
         boletim.addActionListener(e -> verBoletim());
         notas.add(lancarNota);
         notas.add(boletim);
-
-        JMenu ferramentas = new JMenu("Ferramentas");
-        JMenuItem backupBd = new JMenuItem("Backup BD");
-        backupBd.addActionListener(e -> realizarBackup());
-        JMenuItem restaurarBd = new JMenuItem("Restaurar Último Backup");
-        restaurarBd.addActionListener(e -> restaurarBackup());
-        ferramentas.add(backupBd);
-        ferramentas.add(restaurarBd);
-
         bar.add(usuarios);
         bar.add(turmas);
         bar.add(atividades);
         bar.add(notas);
-        bar.add(ferramentas);
         return bar;
     }
 
@@ -233,40 +211,25 @@ public class MainFrame extends JFrame {
 
     private void verBoletim() {
         StringBuilder sb = new StringBuilder();
-        sb.append("--- BOLETIM GERAL ---\n\n");
+        sb.append("=== BOLETIM GERAL ===\n\n");
         List<Nota> notas = ctx.notaDAO.listarTodos();
         if (notas.isEmpty()) {
-            sb.append("Nenhuma nota lançada ainda.");
+            sb.append("Nenhuma nota registrada.");
         } else {
             for (Nota n : notas) {
-                sb.append("Aluno: ").append(n.getAluno().getNome())
-                        .append(" | Atividade: ").append(n.getAtividade().getNome())
-                        .append(" | Nota: ").append(n.getValor())
-                        .append("\n");
+                sb.append(String.format("Aluno: %-15s | Atividade: %-15s | Nota: %.2f\n",
+                        n.getAluno().getNome(), n.getAtividade().getNome(), n.getValor()));
             }
         }
-        JTextArea textArea = new JTextArea(sb.toString());
+        mostrarMsg(sb.toString(), "Boletim");
+    }
+
+    private void mostrarMsg(String msg, String titulo) {
+        JTextArea textArea = new JTextArea(msg);
         textArea.setEditable(false);
+        textArea.setFont(new Font("Monospaced", Font.PLAIN, 12));
         JScrollPane scrollPane = new JScrollPane(textArea);
-        scrollPane.setPreferredSize(new Dimension(500, 400));
-        JOptionPane.showMessageDialog(this, scrollPane, "Boletim", JOptionPane.PLAIN_MESSAGE);
-    }
-
-    private void realizarBackup() {
-        try {
-            java.io.File file = org.teiacoltec.poo.tp4.infra.BackupManager.backup();
-            JOptionPane.showMessageDialog(this, file == null ? "BD inexistente" : ("Backup criado em: " + file.getAbsolutePath()));
-        } catch (Exception ex) {
-            JOptionPane.showMessageDialog(this, "Falha ao criar backup: " + ex.getMessage(), "Erro", JOptionPane.ERROR_MESSAGE);
-        }
-    }
-
-    private void restaurarBackup() {
-        try {
-            java.io.File file = org.teiacoltec.poo.tp4.infra.BackupManager.restoreLatest();
-            JOptionPane.showMessageDialog(this, file == null ? "Nenhum backup encontrado" : ("BD restaurado de: " + file.getAbsolutePath()));
-        } catch (Exception ex) {
-            JOptionPane.showMessageDialog(this, "Falha ao restaurar backup: " + ex.getMessage(), "Erro", JOptionPane.ERROR_MESSAGE);
-        }
+        scrollPane.setPreferredSize(new Dimension(500, 300));
+        JOptionPane.showMessageDialog(this, scrollPane, titulo, JOptionPane.PLAIN_MESSAGE);
     }
 }

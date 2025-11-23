@@ -12,7 +12,7 @@ public class ConnectionFactory {
         try {
             Class.forName("org.sqlite.JDBC");
         } catch (ClassNotFoundException e) {
-            throw new SQLException("Driver SQLite não encontrado na biblioteca!", e);
+            throw new SQLException("ERRO CRÍTICO: Driver SQLite não encontrado no classpath. Verifique a pasta 'lib'.", e);
         }
         String url = System.getProperty("sistema.notas.jdbc.url", DEFAULT_URL);
         return DriverManager.getConnection(url);

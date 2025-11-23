@@ -1,16 +1,17 @@
 ================================================================================
-             INSTRUÇÕES COMPLETAS DE CORREÇÃO E MELHORIA
-             (BANCO DE DADOS + EXECUÇÃO + VISUAL + NOTAS)
+              PROMPT MESTRE: CORREÇÃO TOTAL DO SISTEMA ESCOLAR
 ================================================================================
 
-Por favor, aplique as alterações nos 3 arquivos abaixo para corrigir a conexão 
-com o banco de dados e implementar as funcionalidades de notas.
+ATENÇÃO IA: Atue como um Arquiteto de Software Java. 
+O usuário possui um projeto Swing + JDBC que está apresentando erros de "Driver não encontrado" (SQLite) e precisa de melhorias na interface gráfica.
+
+Sua tarefa é SUBSTITUIR o conteúdo dos arquivos abaixo pelos códigos fornecidos. Não abrevie nada.
 
 --------------------------------------------------------------------------------
 ARQUIVO 1: src/main/java/org/teiacoltec/poo/tp4/infra/ConnectionFactory.java
 --------------------------------------------------------------------------------
-OBJETIVO: Corrigir o caminho do banco para funcionar com o driver SQLite.
-SUBSTITUA TODO O CONTEÚDO POR:
+OBJETIVO: Garantir que o Driver SQLite seja carregado corretamente e definir o banco na raiz do projeto.
+SUBSTITUA POR:
 
 package org.teiacoltec.poo.tp4.infra;
 
@@ -19,17 +20,19 @@ import java.sql.DriverManager;
 import java.sql.SQLException;
 
 public class ConnectionFactory {
-    // Caminho simplificado: cria o notas.db na raiz do projeto
+
+    // Define o banco de dados na raiz do projeto para evitar erros de caminho relativo
     private static final String DEFAULT_URL = "jdbc:sqlite:notas.db";
 
     public static Connection getConnection() throws SQLException {
         try {
-            // Força o carregamento do driver
+            // Força o carregamento do driver JDBC do SQLite
             Class.forName("org.sqlite.JDBC");
         } catch (ClassNotFoundException e) {
-            throw new SQLException("Driver SQLite não encontrado na biblioteca!", e);
+            throw new SQLException("ERRO CRÍTICO: Driver SQLite não encontrado no classpath. Verifique a pasta 'lib'.", e);
         }
         
+        // Obtém a URL (prioriza propriedade do sistema, senão usa o padrão)
         String url = System.getProperty("sistema.notas.jdbc.url", DEFAULT_URL);
         return DriverManager.getConnection(url);
     }
@@ -38,8 +41,8 @@ public class ConnectionFactory {
 --------------------------------------------------------------------------------
 ARQUIVO 2: run.bat
 --------------------------------------------------------------------------------
-OBJETIVO: Apontar corretamente para o arquivo .jar do driver na pasta lib.
-SUBSTITUA TODO O CONTEÚDO POR:
+OBJETIVO: Configurar o CLASSPATH para incluir o JAR do SQLite explicitamente no Windows.
+SUBSTITUA POR:
 
 @echo off
 echo ===================================
@@ -47,6 +50,14 @@ echo    SISTEMA DE NOTAS ESCOLAR
 echo ===================================
 echo.
 
+:: Verifica se a pasta lib existe
+if not exist "lib" (
+    echo [ERRO] A pasta 'lib' nao existe! Crie a pasta e coloque o driver .jar nela.
+    pause
+    exit /b 1
+)
+
+:: Verifica se o projeto foi compilado
 if not exist target\classes (
     echo Codigo nao compilado. Executando build...
     call build.bat
@@ -55,8 +66,9 @@ if not exist target\classes (
 echo Iniciando o sistema...
 echo.
 
-:: Configura o classpath para incluir o JAR do SQLite e as classes compiladas
-java -cp "target\classes;lib\sqlite-jdbc-3.46.0.0.jar" org.teiacoltec.poo.tp4.Main
+:: Executa o Main incluindo o JAR do SQLite e as classes compiladas
+:: O comando "lib\*" carrega qualquer .jar dentro da pasta lib
+java -cp "target\classes;lib\*" org.teiacoltec.poo.tp4.Main
 
 echo.
 echo Sistema encerrado.
@@ -65,9 +77,9 @@ pause
 --------------------------------------------------------------------------------
 ARQUIVO 3: src/main/java/org/teiacoltec/poo/tp4/ui/MainFrame.java
 --------------------------------------------------------------------------------
-OBJETIVO: Melhorar o visual da tela inicial e adicionar o menu de Notas.
+OBJETIVO: Implementar a Interface Gráfica completa com Painel de Boas-vindas e Gestão de Notas.
+SUBSTITUA POR:
 
-A) ATUALIZE OS IMPORTS (Topo do arquivo):
 package org.teiacoltec.poo.tp4.ui;
 
 import org.teiacoltec.poo.tp4.*;
@@ -76,7 +88,10 @@ import java.awt.*;
 import java.util.List;
 import java.util.ArrayList;
 
-B) SUBSTITUA O CONSTRUTOR "public MainFrame(AppContext ctx)":
+public class MainFrame extends JFrame {
+
+    private final AppContext ctx;
+
     public MainFrame(AppContext ctx) {
         super("Sistema de Notas - Principal");
         this.ctx = ctx;
@@ -84,7 +99,7 @@ B) SUBSTITUA O CONSTRUTOR "public MainFrame(AppContext ctx)":
         setLayout(new BorderLayout());
         setJMenuBar(criarMenu());
 
-        // --- PAINEL DE BOAS-VINDAS ---
+        // --- Painel Central de Boas-Vindas ---
         JPanel painelPrincipal = new JPanel();
         painelPrincipal.setLayout(new BoxLayout(painelPrincipal, BoxLayout.Y_AXIS));
         painelPrincipal.setBorder(BorderFactory.createEmptyBorder(50, 50, 50, 50));
@@ -116,32 +131,10 @@ B) SUBSTITUA O CONSTRUTOR "public MainFrame(AppContext ctx)":
         setLocationRelativeTo(null);
     }
 
-================================================================================
-RELATÓRIO DAS ALTERAÇÕES APLICADAS
-================================================================================
-
-1) Banco de dados e execução
-- ConnectionFactory atualizado para carregar o driver SQLite e usar jdbc:sqlite:notas.db (src/main/java/org/teiacoltec/poo/tp4/infra/ConnectionFactory.java).
-- run.bat atualizado para incluir o JAR do SQLite no classpath: lib/sqlite-jdbc-3.46.0.0.jar.
-- AppContext configurado para usar JDBC também para Atividades e Notas; fallback mantém memória em caso de falha.
-- Criado BackupManager com funções de backup/restauração do arquivo notas.db.
-
-2) Interface e funcionalidades de notas
-- MainFrame melhorado com painel de boas-vindas e novo menu Notas (Lançar Nota/Ver Boletim).
-- Adicionado menu Ferramentas com Backup/Restore.
-
-3) Testes automatizados
-- build.bat agora compila também os testes em target\test-classes.
-- TestRunner inclui testes de autenticação, CRUD de Turma e CRUD de Nota; inclui teste de carga de notas quando JDBC estiver disponível.
-
-4) Observações de ambiente
-- Se o driver SQLite não estiver em lib, o sistema cai para modo memória e os testes passam; para persistir no arquivo, coloque o sqlite-jdbc em lib.
-
-================================================================================
-C) SUBSTITUA O MÉTODO "criarMenu()":
     private JMenuBar criarMenu() {
         JMenuBar bar = new JMenuBar();
         
+        // Menu Usuários
         JMenu usuarios = new JMenu("Usuários");
         JMenuItem listarUsuarios = new JMenuItem("Listar");
         listarUsuarios.addActionListener(e -> mostrarUsuarios());
@@ -150,6 +143,7 @@ C) SUBSTITUA O MÉTODO "criarMenu()":
         usuarios.add(listarUsuarios);
         usuarios.add(criarAluno);
 
+        // Menu Turmas
         JMenu turmas = new JMenu("Turmas");
         JMenuItem listarTurmas = new JMenuItem("Listar");
         listarTurmas.addActionListener(e -> mostrarTurmas());
@@ -158,6 +152,7 @@ C) SUBSTITUA O MÉTODO "criarMenu()":
         turmas.add(listarTurmas);
         turmas.add(criarTurma);
 
+        // Menu Atividades
         JMenu atividades = new JMenu("Atividades");
         JMenuItem listarAtividades = new JMenuItem("Listar");
         listarAtividades.addActionListener(e -> mostrarAtividades());
@@ -166,6 +161,7 @@ C) SUBSTITUA O MÉTODO "criarMenu()":
         atividades.add(listarAtividades);
         atividades.add(criarAtividade);
 
+        // Menu Notas (Funcionalidade Adicionada)
         JMenu notas = new JMenu("Notas");
         JMenuItem lancarNota = new JMenuItem("Lançar Nota");
         lancarNota.addActionListener(e -> lancarNota());
@@ -181,13 +177,83 @@ C) SUBSTITUA O MÉTODO "criarMenu()":
         return bar;
     }
 
-D) ADICIONE ESTES MÉTODOS NO FINAL DA CLASSE (Antes do último "}"):
+    // --- Métodos de Ação ---
+
+    private void mostrarUsuarios() {
+        StringBuilder sb = new StringBuilder();
+        for (Pessoa p : ctx.pessoaDAO.listarTodos()) {
+            sb.append(p.getClass().getSimpleName()).append(": ").append(p.getNome())
+              .append(" (Login: ").append(p.getLogin()).append(")\n");
+        }
+        mostrarMsg(sb.length() == 0 ? "Nenhum usuário cadastrado" : sb.toString(), "Usuários");
+    }
+
+    private void criarAluno() {
+        String nome = JOptionPane.showInputDialog(this, "Nome do aluno:");
+        if(nome == null) return;
+        String matricula = JOptionPane.showInputDialog(this, "Matrícula:");
+        String login = JOptionPane.showInputDialog(this, "Login:");
+        String senha = JOptionPane.showInputDialog(this, "Senha:");
+        
+        if (login != null && ctx.pessoaDAO.buscarPorLogin(login) != null) { 
+            JOptionPane.showMessageDialog(this, "Login já existe", "Erro", JOptionPane.ERROR_MESSAGE); 
+            return; 
+        }
+        if(nome != null && login != null && senha != null) {
+            Aluno a = new Aluno(nome, matricula, login, senha);
+            ctx.pessoaDAO.salvar(a);
+            JOptionPane.showMessageDialog(this, "Aluno criado: " + a.getNome());
+        }
+    }
+
+    private void mostrarTurmas() {
+        StringBuilder sb = new StringBuilder();
+        for (Turma t : ctx.turmaDAO.listarTodos()) {
+            sb.append(t.toString()).append("\n");
+        }
+        mostrarMsg(sb.length() == 0 ? "Nenhuma turma cadastrada" : sb.toString(), "Turmas");
+    }
+
+    private void criarTurma() {
+        String nome = JOptionPane.showInputDialog(this, "Nome da turma:");
+        if(nome == null) return;
+        String descricao = JOptionPane.showInputDialog(this, "Descrição:");
+        int novoId = ctx.turmaDAO.listarTodos().stream().mapToInt(Turma::getId).max().orElse(0) + 1;
+        Turma t = new Turma(novoId, nome, descricao == null ? "" : descricao, new Date(), new Date());
+        ctx.turmaDAO.salvar(t);
+        JOptionPane.showMessageDialog(this, "Turma criada com sucesso!");
+    }
+
+    private void mostrarAtividades() {
+        StringBuilder sb = new StringBuilder();
+        for (Atividade a : ctx.atividadeDAO.listarTodos()) {
+            sb.append(a.toString()).append("\n");
+        }
+        mostrarMsg(sb.length() == 0 ? "Nenhuma atividade cadastrada" : sb.toString(), "Atividades");
+    }
+
+    private void criarAtividade() {
+        String nome = JOptionPane.showInputDialog(this, "Nome da atividade:");
+        if(nome == null) return;
+        String descricao = JOptionPane.showInputDialog(this, "Descrição:");
+        float valor = 10f;
+        try { 
+            String v = JOptionPane.showInputDialog(this, "Valor (pontos):", "10");
+            if(v != null) valor = Float.parseFloat(v); 
+        } catch (Exception ignored) {}
+        
+        int novoId = ctx.atividadeDAO.listarTodos().stream().mapToInt(Atividade::getId).max().orElse(0) + 1;
+        Atividade a = new Atividade(novoId, nome, descricao == null ? "" : descricao, new Date(), new Date(), valor);
+        ctx.atividadeDAO.salvar(a);
+        JOptionPane.showMessageDialog(this, "Atividade criada: " + a.toString());
+    }
+
     private void lancarNota() {
         List<Pessoa> alunos = new ArrayList<>();
         for(Pessoa p : ctx.pessoaDAO.listarTodos()) {
             if(p instanceof Aluno) alunos.add(p);
         }
-        if(alunos.isEmpty()) { JOptionPane.showMessageDialog(this, "Nenhum aluno cadastrado."); return; }
+        if(alunos.isEmpty()) { JOptionPane.showMessageDialog(this, "Nenhum aluno para lançar nota."); return; }
         
         Object[] alunosArray = alunos.stream().map(Pessoa::getNome).toArray();
         String nomeAluno = (String) JOptionPane.showInputDialog(this, "Selecione o Aluno:", "Lançar Nota", 
@@ -198,7 +264,7 @@ D) ADICIONE ESTES MÉTODOS NO FINAL DA CLASSE (Antes do último "}"):
             .filter(a -> a.getNome().equals(nomeAluno)).findFirst().orElse(null);
 
         List<Atividade> atividades = ctx.atividadeDAO.listarTodos();
-        if(atividades.isEmpty()) { JOptionPane.showMessageDialog(this, "Nenhuma atividade cadastrada."); return; }
+        if(atividades.isEmpty()) { JOptionPane.showMessageDialog(this, "Crie uma atividade primeiro."); return; }
         
         Object[] atvArray = atividades.stream().map(Atividade::getNome).toArray();
         String nomeAtv = (String) JOptionPane.showInputDialog(this, "Selecione a Atividade:", "Lançar Nota", 
@@ -208,42 +274,45 @@ D) ADICIONE ESTES MÉTODOS NO FINAL DA CLASSE (Antes do último "}"):
         Atividade atvSelecionada = atividades.stream()
             .filter(a -> a.getNome().equals(nomeAtv)).findFirst().orElse(null);
 
-        String valorStr = JOptionPane.showInputDialog(this, "Digite a nota (Max: " + atvSelecionada.getValor() + "):");
+        String valorStr = JOptionPane.showInputDialog(this, "Nota (Max: " + atvSelecionada.getValor() + "):");
         if(valorStr == null) return;
         
         try {
             float valor = Float.parseFloat(valorStr);
             if(valor < 0 || valor > atvSelecionada.getValor()) {
-                JOptionPane.showMessageDialog(this, "Nota inválida! Deve ser entre 0 e " + atvSelecionada.getValor());
+                JOptionPane.showMessageDialog(this, "Nota inválida! Limite: " + atvSelecionada.getValor());
                 return;
             }
             Nota novaNota = new Nota(alunoSelecionado, atvSelecionada, valor, "");
             ctx.notaDAO.salvar(novaNota);
-            JOptionPane.showMessageDialog(this, "Nota lançada com sucesso!");
+            JOptionPane.showMessageDialog(this, "Nota lançada!");
         } catch (NumberFormatException e) {
-            JOptionPane.showMessageDialog(this, "Digite um número válido.");
+            JOptionPane.showMessageDialog(this, "Valor inválido.");
         }
     }
 
     private void verBoletim() {
         StringBuilder sb = new StringBuilder();
-        sb.append("--- BOLETIM GERAL ---\n\n");
+        sb.append("=== BOLETIM GERAL ===\n\n");
         List<Nota> notas = ctx.notaDAO.listarTodos();
         
         if (notas.isEmpty()) {
-            sb.append("Nenhuma nota lançada ainda.");
+            sb.append("Nenhuma nota registrada.");
         } else {
             for(Nota n : notas) {
-                sb.append("Aluno: ").append(n.getAluno().getNome())
-                  .append(" | Atividade: ").append(n.getAtividade().getNome())
-                  .append(" | Nota: ").append(n.getValor())
-                  .append("\n");
+                sb.append(String.format("Aluno: %-15s | Atividade: %-15s | Nota: %.2f\n", 
+                    n.getAluno().getNome(), n.getAtividade().getNome(), n.getValor()));
             }
         }
-        
-        JTextArea textArea = new JTextArea(sb.toString());
-        textArea.setEditable(false);
-        JScrollPane scrollPane = new JScrollPane(textArea);
-        scrollPane.setPreferredSize(new Dimension(500, 400));
-        JOptionPane.showMessageDialog(this, scrollPane, "Boletim", JOptionPane.PLAIN_MESSAGE);
+        mostrarMsg(sb.toString(), "Boletim");
     }
+
+    private void mostrarMsg(String msg, String titulo) {
+        JTextArea textArea = new JTextArea(msg);
+        textArea.setEditable(false);
+        textArea.setFont(new Font("Monospaced", Font.PLAIN, 12));
+        JScrollPane scrollPane = new JScrollPane(textArea);
+        scrollPane.setPreferredSize(new Dimension(500, 300));
+        JOptionPane.showMessageDialog(this, scrollPane, titulo, JOptionPane.PLAIN_MESSAGE);
+    }
+}
