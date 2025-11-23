@@ -45,9 +45,17 @@ public class PessoaDAOJdbc implements PessoaDAO {
             while (rs.next()) {
                 String tipo = rs.getString("tipo");
                 Pessoa p;
-                if ("Aluno".equals(tipo)) p = new Aluno(rs.getString("cpf"), rs.getString("nome"), new java.util.Date(), "", "", "", "", rs.getString("login"), rs.getString("senha"), true);
-                else if ("Monitor".equals(tipo)) p = new Monitor(rs.getString("cpf"), rs.getString("nome"), new java.util.Date(), "", "", "", "", rs.getString("login"), rs.getString("senha"), true);
-                else p = new Professor(rs.getString("cpf"), rs.getString("nome"), new java.util.Date(), "", "", "", "", rs.getString("login"), rs.getString("senha"), true);
+                switch (tipo) {
+                    case "Aluno":
+                        p = new Aluno(rs.getString("cpf"), rs.getString("nome"), new java.util.Date(), "", "", "", "", rs.getString("login"), rs.getString("senha"), true);
+                        break;
+                    case "Monitor":
+                        p = new Monitor(rs.getString("cpf"), rs.getString("nome"), new java.util.Date(), "", "", "", "", rs.getString("login"), rs.getString("senha"), true);
+                        break;
+                    default:
+                        p = new Professor(rs.getString("cpf"), rs.getString("nome"), new java.util.Date(), "", "", "", "", rs.getString("login"), rs.getString("senha"), true);
+                        break;
+                }
                 list.add(p);
             }
         } catch (SQLException e) { throw new RuntimeException(e); }
@@ -61,9 +69,14 @@ public class PessoaDAOJdbc implements PessoaDAO {
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
                     String tipo = rs.getString("tipo");
-                    if ("Aluno".equals(tipo)) return new Aluno(rs.getString("cpf"), rs.getString("nome"), new java.util.Date(), "", "", "", "", rs.getString("login"), rs.getString("senha"), true);
-                    if ("Monitor".equals(tipo)) return new Monitor(rs.getString("cpf"), rs.getString("nome"), new java.util.Date(), "", "", "", "", rs.getString("login"), rs.getString("senha"), true);
-                    return new Professor(rs.getString("cpf"), rs.getString("nome"), new java.util.Date(), "", "", "", "", rs.getString("login"), rs.getString("senha"), true);
+                    switch (tipo) {
+                        case "Aluno":
+                            return new Aluno(rs.getString("cpf"), rs.getString("nome"), new java.util.Date(), "", "", "", "", rs.getString("login"), rs.getString("senha"), true);
+                        case "Monitor":
+                            return new Monitor(rs.getString("cpf"), rs.getString("nome"), new java.util.Date(), "", "", "", "", rs.getString("login"), rs.getString("senha"), true);
+                        default:
+                            return new Professor(rs.getString("cpf"), rs.getString("nome"), new java.util.Date(), "", "", "", "", rs.getString("login"), rs.getString("senha"), true);
+                    }
                 }
             }
         } catch (SQLException e) { throw new RuntimeException(e); }

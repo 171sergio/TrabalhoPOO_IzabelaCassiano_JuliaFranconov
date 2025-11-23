@@ -23,6 +23,7 @@ import java.util.Date;
  * Contexto da aplicação: DAOs, autenticação e dados iniciais.
  */
 public class AppContext {
+
     public final Autenticacao autenticacao = new Autenticacao();
     public PessoaDAO pessoaDAO;
     public TurmaDAO turmaDAO;
@@ -31,6 +32,7 @@ public class AppContext {
     public TarefaDAO tarefaDAO;
     public Connection jdbcConnection;
 
+    @SuppressWarnings("all")
     public AppContext() {
         try {
             jdbcConnection = ConnectionFactory.getConnection();
@@ -43,6 +45,8 @@ public class AppContext {
             tarefaDAO = new TarefaDAOInMemory(mem);
         } catch (Exception e) {
             System.err.println("Erro no JDBC: " + e.getMessage());
+            javax.swing.JOptionPane.showMessageDialog(null,
+                    "Aviso: Banco de dados não conectado.\nO sistema rodará em modo memória.");
             InMemoryStore mem = new InMemoryStore();
             pessoaDAO = new PessoaDAOInMemory(mem);
             turmaDAO = new TurmaDAOInMemory(mem);
@@ -69,11 +73,15 @@ public class AppContext {
                 turmaDAO.adicionarParticipante(turma1, prof1);
                 turmaDAO.adicionarParticipante(turma1, aluno1);
                 turmaDAO.adicionarParticipante(turma1, monitor1);
-            } catch (Exception ignored) {}
+            } catch (Exception ignored) {
+            }
 
             Atividade atividade1 = new Atividade(1, "Trabalho Final", "Implementacao de sistema de notas", hoje, hoje, 10.0f);
             atividadeDAO.salvar(atividade1);
-            try { turma1.associaAtividade(atividade1); } catch (Exception ignored) {}
+            try {
+                turma1.associaAtividade(atividade1);
+            } catch (Exception ignored) {
+            }
         }
     }
 }
