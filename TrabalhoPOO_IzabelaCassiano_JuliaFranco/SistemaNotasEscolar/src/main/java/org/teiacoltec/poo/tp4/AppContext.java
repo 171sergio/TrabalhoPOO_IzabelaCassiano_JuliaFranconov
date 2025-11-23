@@ -39,10 +39,9 @@ public class AppContext {
             SchemaInitializer.ensureSchema(jdbcConnection);
             pessoaDAO = new PessoaDAOJdbc(jdbcConnection);
             turmaDAO = new TurmaDAOJdbc(jdbcConnection);
-            InMemoryStore mem = new InMemoryStore();
-            atividadeDAO = new AtividadeDAOInMemory(mem);
-            notaDAO = new NotaDAOInMemory(mem);
-            tarefaDAO = new TarefaDAOInMemory(mem);
+            atividadeDAO = new org.teiacoltec.poo.tp4.dao.jdbc.AtividadeDAOJdbc(jdbcConnection);
+            notaDAO = new org.teiacoltec.poo.tp4.dao.jdbc.NotaDAOJdbc(jdbcConnection);
+            tarefaDAO = new TarefaDAOInMemory(new InMemoryStore());
         } catch (Exception e) {
             System.err.println("Erro no JDBC: " + e.getMessage());
             javax.swing.JOptionPane.showMessageDialog(null,

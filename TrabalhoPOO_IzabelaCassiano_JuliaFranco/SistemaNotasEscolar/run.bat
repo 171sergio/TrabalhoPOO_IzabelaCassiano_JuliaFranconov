@@ -14,9 +14,9 @@ if not exist target\classes (
     )
 )
 
-echo Iniciando o sistema (TP4)...
+echo Iniciando o sistema...
 echo.
-java -cp target\classes;lib/* org.teiacoltec.poo.tp4.Main
+java -cp "target\classes;lib\sqlite-jdbc-3.46.0.0.jar" org.teiacoltec.poo.tp4.Main
 
 echo.
 echo Sistema encerrado.

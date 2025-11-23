@@ -1,236 +1,45 @@
 ================================================================================
-               GUIA COMPLETO DE CORREÇÃO - SISTEMA DE NOTAS ESCOLAR
+             INSTRUÇÕES COMPLETAS DE CORREÇÃO E MELHORIA
+             (BANCO DE DADOS + EXECUÇÃO + VISUAL + NOTAS)
 ================================================================================
 
-ESTE GUIA RESOLVE:
-1. Erros de "Incorrect Package" (Pacote Incorreto).
-2. Erros de "cannot find symbol" (Não encontra classes).
-3. Erros de compilação no build.bat.
-
-SIGA A ORDEM EXATA DOS PASSOS ABAIXO.
-
-================================================================================
-PASSO 1: CORRIGIR PACOTES E IMPORTS NOS ARQUIVOS JAVA
-================================================================================
-
-Abra cada arquivo listado abaixo no VS Code e substitua o início do arquivo
-(as linhas de package e import) pelo código fornecido.
+Por favor, aplique as alterações nos 3 arquivos abaixo para corrigir a conexão 
+com o banco de dados e implementar as funcionalidades de notas.
 
 --------------------------------------------------------------------------------
-GRUPO A: ARQUIVOS NA RAIZ (src/main/java/org/teiacoltec/poo/tp4/)
+ARQUIVO 1: src/main/java/org/teiacoltec/poo/tp4/infra/ConnectionFactory.java
 --------------------------------------------------------------------------------
-IMPORTANTE: Todos estes arquivos devem ter APENAS "package org.teiacoltec.poo.tp4;"
-Se tiver ".ui", ".dao" ou qualquer outra coisa no final, APAGUE.
+OBJETIVO: Corrigir o caminho do banco para funcionar com o driver SQLite.
+SUBSTITUA TODO O CONTEÚDO POR:
 
-Arquivos para verificar:
-- AcessoNaoAutorizadoException.java
-- Aluno.java
-- Atividade.java
-- AtividadeJaAssociadaATurmaException.java
-- AtividadeNaoAssociadaATurmaException.java
-- Autenticacao.java
-- CredenciaisInvalidasException.java
-- Main.java (apenas package, imports podem variar)
-- Monitor.java
-- Nota.java
-- Pessoa.java
-- PessoaJaParticipanteException.java
-- PessoaNaoEncontradaException.java
-- Professor.java
-- SubturmaJaAssociadaException.java
-- SubturmaNaoAssociadaException.java
-- Tarefa.java
-- Turma.java
-
-O INÍCIO DESSES ARQUIVOS DEVE SER ASSIM:
-package org.teiacoltec.poo.tp4;
-(O restante do código do arquivo continua igual)
-
---------------------------------------------------------------------------------
-GRUPO B: CORREÇÃO DO AppContext.java (src/main/java/org/teiacoltec/poo/tp4/)
---------------------------------------------------------------------------------
-Este é o arquivo que está causando a maioria dos erros de "cannot find symbol".
-Substitua TODO o início do arquivo AppContext.java (até a linha "public class AppContext {") por:
-
-package org.teiacoltec.poo.tp4;
-
-import org.teiacoltec.poo.tp4.dao.PessoaDAO;
-import org.teiacoltec.poo.tp4.dao.TurmaDAO;
-import org.teiacoltec.poo.tp4.dao.AtividadeDAO;
-import org.teiacoltec.poo.tp4.dao.NotaDAO;
-import org.teiacoltec.poo.tp4.dao.TarefaDAO;
-import org.teiacoltec.poo.tp4.dao.jdbc.PessoaDAOJdbc;
-import org.teiacoltec.poo.tp4.dao.jdbc.TurmaDAOJdbc;
-import org.teiacoltec.poo.tp4.dao.memory.InMemoryStore;
-import org.teiacoltec.poo.tp4.dao.memory.PessoaDAOInMemory;
-import org.teiacoltec.poo.tp4.dao.memory.TurmaDAOInMemory;
-import org.teiacoltec.poo.tp4.dao.memory.AtividadeDAOInMemory;
-import org.teiacoltec.poo.tp4.dao.memory.NotaDAOInMemory;
-import org.teiacoltec.poo.tp4.dao.memory.TarefaDAOInMemory;
-import org.teiacoltec.poo.tp4.infra.ConnectionFactory;
-import org.teiacoltec.poo.tp4.infra.SchemaInitializer;
+package org.teiacoltec.poo.tp4.infra;
 
 import java.sql.Connection;
-import java.util.Date;
+import java.sql.DriverManager;
+import java.sql.SQLException;
 
-public class AppContext {
-    // ... resto do código ...
+public class ConnectionFactory {
+    // Caminho simplificado: cria o notas.db na raiz do projeto
+    private static final String DEFAULT_URL = "jdbc:sqlite:notas.db";
 
---------------------------------------------------------------------------------
-GRUPO C: CORREÇÃO DA PASTA DAO (src/main/java/org/teiacoltec/poo/tp4/dao/)
---------------------------------------------------------------------------------
-
-1. Arquivo: AtividadeDAO.java
-   INÍCIO CORRETO:
-   package org.teiacoltec.poo.tp4.dao;
-   
-   import org.teiacoltec.poo.tp4.Atividade;
-   import java.util.List;
-   
-   public interface AtividadeDAO { ...
-
-2. Arquivo: NotaDAO.java
-   INÍCIO CORRETO:
-   package org.teiacoltec.poo.tp4.dao;
-   
-   import org.teiacoltec.poo.tp4.Nota;
-   import org.teiacoltec.poo.tp4.Aluno;
-   import org.teiacoltec.poo.tp4.Atividade;
-   import java.util.List;
-   
-   public interface NotaDAO { ...
-
-3. Os outros arquivos (PessoaDAO.java, TurmaDAO.java, TarefaDAO.java)
-   Devem começar com: package org.teiacoltec.poo.tp4.dao;
-   E importar as classes necessárias de org.teiacoltec.poo.tp4.*
+    public static Connection getConnection() throws SQLException {
+        try {
+            // Força o carregamento do driver
+            Class.forName("org.sqlite.JDBC");
+        } catch (ClassNotFoundException e) {
+            throw new SQLException("Driver SQLite não encontrado na biblioteca!", e);
+        }
+        
+        String url = System.getProperty("sistema.notas.jdbc.url", DEFAULT_URL);
+        return DriverManager.getConnection(url);
+    }
+}
 
 --------------------------------------------------------------------------------
-GRUPO D: CORREÇÃO DA PASTA JDBC (src/main/java/org/teiacoltec/poo/tp4/dao/jdbc/)
+ARQUIVO 2: run.bat
 --------------------------------------------------------------------------------
-
-1. Arquivo: PessoaDAOJdbc.java
-   INÍCIO CORRETO:
-   package org.teiacoltec.poo.tp4.dao.jdbc;
-
-   import org.teiacoltec.poo.tp4.Pessoa;
-   import org.teiacoltec.poo.tp4.Aluno;
-   import org.teiacoltec.poo.tp4.Professor;
-   import org.teiacoltec.poo.tp4.Monitor;
-   import org.teiacoltec.poo.tp4.dao.PessoaDAO;
-   import java.sql.*;
-   import java.util.ArrayList;
-   import java.util.List;
-
-   public class PessoaDAOJdbc implements PessoaDAO { ...
-
-2. Arquivo: TurmaDAOJdbc.java
-   INÍCIO CORRETO:
-   package org.teiacoltec.poo.tp4.dao.jdbc;
-
-   import org.teiacoltec.poo.tp4.Turma;
-   import org.teiacoltec.poo.tp4.Pessoa;
-   import org.teiacoltec.poo.tp4.PessoaJaParticipanteException;
-   import org.teiacoltec.poo.tp4.PessoaNaoEncontradaException;
-   import org.teiacoltec.poo.tp4.dao.TurmaDAO;
-   import java.sql.*;
-   import java.util.ArrayList;
-   import java.util.List;
-
-   public class TurmaDAOJdbc implements TurmaDAO { ...
-
---------------------------------------------------------------------------------
-GRUPO E: CORREÇÃO DA PASTA MEMORY (src/main/java/org/teiacoltec/poo/tp4/dao/memory/)
---------------------------------------------------------------------------------
-
-Todos os arquivos nesta pasta devem começar com:
-package org.teiacoltec.poo.tp4.dao.memory;
-
-Verifique os imports específicos:
-
-1. InMemoryStore.java
-   Imports:
-   import org.teiacoltec.poo.tp4.Pessoa;
-   import org.teiacoltec.poo.tp4.Turma;
-   import org.teiacoltec.poo.tp4.Atividade;
-   import org.teiacoltec.poo.tp4.Nota;
-   import org.teiacoltec.poo.tp4.Tarefa;
-
-2. AtividadeDAOInMemory.java
-   Imports:
-   import org.teiacoltec.poo.tp4.Atividade;
-   import org.teiacoltec.poo.tp4.dao.AtividadeDAO;
-
-3. NotaDAOInMemory.java
-   Imports:
-   import org.teiacoltec.poo.tp4.Nota;
-   import org.teiacoltec.poo.tp4.Aluno;
-   import org.teiacoltec.poo.tp4.Atividade;
-   import org.teiacoltec.poo.tp4.dao.NotaDAO;
-
-4. PessoaDAOInMemory.java
-   Imports:
-   import org.teiacoltec.poo.tp4.Pessoa;
-   import org.teiacoltec.poo.tp4.dao.PessoaDAO;
-
-5. TarefaDAOInMemory.java
-   Imports:
-   import org.teiacoltec.poo.tp4.Tarefa;
-   import org.teiacoltec.poo.tp4.Pessoa;
-   import org.teiacoltec.poo.tp4.dao.TarefaDAO;
-
-6. TurmaDAOInMemory.java
-   Imports:
-   import org.teiacoltec.poo.tp4.Turma;
-   import org.teiacoltec.poo.tp4.Pessoa;
-   import org.teiacoltec.poo.tp4.PessoaJaParticipanteException;
-   import org.teiacoltec.poo.tp4.PessoaNaoEncontradaException;
-   import org.teiacoltec.poo.tp4.dao.TurmaDAO;
-
-================================================================================
-PASSO 2: ATUALIZAR O SCRIPT DE BUILD (build.bat)
-================================================================================
-
-Copie o código abaixo e substitua TODO o conteúdo do seu arquivo build.bat:
-
-@echo off
-echo ===================================
-echo    SISTEMA DE NOTAS ESCOLAR (FIX)
-echo ===================================
-echo.
-
-echo [1/3] Limpando versao anterior...
-if exist target rmdir /s /q target
-mkdir target\classes
-
-echo [2/3] Compilando TUDO (incluindo subpastas)...
-:: O comando abaixo lista todos os arquivos .java recursivamente e salva em sources.txt
-dir /s /B src\main\java\org\teiacoltec\poo\tp4\*.java > sources.txt
-
-:: Compila usando a lista gerada
-javac -d target\classes -cp src\main\java @sources.txt
-
-:: Limpa o arquivo temporário
-del sources.txt
-
-if %errorlevel% neq 0 (
-    echo.
-    echo ERRO CRITICO: A compilacao falhou.
-    echo Verifique as mensagens acima.
-    pause
-    exit /b 1
-)
-
-echo.
-echo [3/3] SUCESSO! Tudo compilado.
-echo Agora execute o run.bat
-echo.
-pause
-
-================================================================================
-PASSO 3: ATUALIZAR O SCRIPT DE EXECUÇÃO (run.bat)
-================================================================================
-
-Copie o código abaixo e substitua TODO o conteúdo do seu arquivo run.bat:
+OBJETIVO: Apontar corretamente para o arquivo .jar do driver na pasta lib.
+SUBSTITUA TODO O CONTEÚDO POR:
 
 @echo off
 echo ===================================
@@ -241,30 +50,200 @@ echo.
 if not exist target\classes (
     echo Codigo nao compilado. Executando build...
     call build.bat
-    if %errorlevel% neq 0 (
-        echo ERRO: Falha no build!
-        pause
-        exit /b 1
-    )
 )
 
-echo Iniciando o sistema (TP4)...
+echo Iniciando o sistema...
 echo.
-java -cp target\classes;lib/* org.teiacoltec.poo.tp4.Main
+
+:: Configura o classpath para incluir o JAR do SQLite e as classes compiladas
+java -cp "target\classes;lib\sqlite-jdbc-3.46.0.0.jar" org.teiacoltec.poo.tp4.Main
 
 echo.
 echo Sistema encerrado.
 pause
 
+--------------------------------------------------------------------------------
+ARQUIVO 3: src/main/java/org/teiacoltec/poo/tp4/ui/MainFrame.java
+--------------------------------------------------------------------------------
+OBJETIVO: Melhorar o visual da tela inicial e adicionar o menu de Notas.
+
+A) ATUALIZE OS IMPORTS (Topo do arquivo):
+package org.teiacoltec.poo.tp4.ui;
+
+import org.teiacoltec.poo.tp4.*;
+import javax.swing.*;
+import java.awt.*;
+import java.util.List;
+import java.util.ArrayList;
+
+B) SUBSTITUA O CONSTRUTOR "public MainFrame(AppContext ctx)":
+    public MainFrame(AppContext ctx) {
+        super("Sistema de Notas - Principal");
+        this.ctx = ctx;
+        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        setLayout(new BorderLayout());
+        setJMenuBar(criarMenu());
+
+        // --- PAINEL DE BOAS-VINDAS ---
+        JPanel painelPrincipal = new JPanel();
+        painelPrincipal.setLayout(new BoxLayout(painelPrincipal, BoxLayout.Y_AXIS));
+        painelPrincipal.setBorder(BorderFactory.createEmptyBorder(50, 50, 50, 50));
+        
+        JLabel titulo = new JLabel("Sistema de Gestão Escolar");
+        titulo.setFont(new Font("Arial", Font.BOLD, 24));
+        titulo.setAlignmentX(Component.CENTER_ALIGNMENT);
+        
+        String nomeUsuario = (ctx.autenticacao.getUsuarioLogado() != null) ? 
+                              ctx.autenticacao.getUsuarioLogado().getNome() : "Usuário";
+        
+        JLabel subtitulo = new JLabel("Bem-vindo, " + nomeUsuario);
+        subtitulo.setFont(new Font("Arial", Font.PLAIN, 16));
+        subtitulo.setAlignmentX(Component.CENTER_ALIGNMENT);
+
+        JLabel info = new JLabel("Utilize o menu acima para gerenciar Turmas, Alunos e Notas.");
+        info.setAlignmentX(Component.CENTER_ALIGNMENT);
+
+        painelPrincipal.add(titulo);
+        painelPrincipal.add(Box.createRigidArea(new Dimension(0, 20)));
+        painelPrincipal.add(subtitulo);
+        painelPrincipal.add(Box.createRigidArea(new Dimension(0, 40)));
+        painelPrincipal.add(info);
+
+        add(painelPrincipal, BorderLayout.CENTER);
+        
+        pack();
+        setSize(800, 600); 
+        setLocationRelativeTo(null);
+    }
+
 ================================================================================
-PASSO 4: LIMPAR CACHE E EXECUTAR
+RELATÓRIO DAS ALTERAÇÕES APLICADAS
 ================================================================================
 
-1. No VS Code, pressione F1.
-2. Digite: Java: Clean Java Language Server Workspace
-3. Selecione a opção e clique em "Restart and Delete" (Reiniciar e Apagar).
-4. Espere o VS Code recarregar.
-5. Abra o terminal integrado ou Prompt de Comando.
-6. Digite: build.bat
-   (Se der "SUCESSO", continue. Se der erro, leia qual arquivo falhou e confira o Passo 1).
-7. Digite: run.bat
+1) Banco de dados e execução
+- ConnectionFactory atualizado para carregar o driver SQLite e usar jdbc:sqlite:notas.db (src/main/java/org/teiacoltec/poo/tp4/infra/ConnectionFactory.java).
+- run.bat atualizado para incluir o JAR do SQLite no classpath: lib/sqlite-jdbc-3.46.0.0.jar.
+- AppContext configurado para usar JDBC também para Atividades e Notas; fallback mantém memória em caso de falha.
+- Criado BackupManager com funções de backup/restauração do arquivo notas.db.
+
+2) Interface e funcionalidades de notas
+- MainFrame melhorado com painel de boas-vindas e novo menu Notas (Lançar Nota/Ver Boletim).
+- Adicionado menu Ferramentas com Backup/Restore.
+
+3) Testes automatizados
+- build.bat agora compila também os testes em target\test-classes.
+- TestRunner inclui testes de autenticação, CRUD de Turma e CRUD de Nota; inclui teste de carga de notas quando JDBC estiver disponível.
+
+4) Observações de ambiente
+- Se o driver SQLite não estiver em lib, o sistema cai para modo memória e os testes passam; para persistir no arquivo, coloque o sqlite-jdbc em lib.
+
+================================================================================
+C) SUBSTITUA O MÉTODO "criarMenu()":
+    private JMenuBar criarMenu() {
+        JMenuBar bar = new JMenuBar();
+        
+        JMenu usuarios = new JMenu("Usuários");
+        JMenuItem listarUsuarios = new JMenuItem("Listar");
+        listarUsuarios.addActionListener(e -> mostrarUsuarios());
+        JMenuItem criarAluno = new JMenuItem("Novo Aluno");
+        criarAluno.addActionListener(e -> criarAluno());
+        usuarios.add(listarUsuarios);
+        usuarios.add(criarAluno);
+
+        JMenu turmas = new JMenu("Turmas");
+        JMenuItem listarTurmas = new JMenuItem("Listar");
+        listarTurmas.addActionListener(e -> mostrarTurmas());
+        JMenuItem criarTurma = new JMenuItem("Nova Turma");
+        criarTurma.addActionListener(e -> criarTurma());
+        turmas.add(listarTurmas);
+        turmas.add(criarTurma);
+
+        JMenu atividades = new JMenu("Atividades");
+        JMenuItem listarAtividades = new JMenuItem("Listar");
+        listarAtividades.addActionListener(e -> mostrarAtividades());
+        JMenuItem criarAtividade = new JMenuItem("Nova Atividade");
+        criarAtividade.addActionListener(e -> criarAtividade());
+        atividades.add(listarAtividades);
+        atividades.add(criarAtividade);
+
+        JMenu notas = new JMenu("Notas");
+        JMenuItem lancarNota = new JMenuItem("Lançar Nota");
+        lancarNota.addActionListener(e -> lancarNota());
+        JMenuItem boletim = new JMenuItem("Ver Boletim");
+        boletim.addActionListener(e -> verBoletim());
+        notas.add(lancarNota);
+        notas.add(boletim);
+
+        bar.add(usuarios);
+        bar.add(turmas);
+        bar.add(atividades);
+        bar.add(notas);
+        return bar;
+    }
+
+D) ADICIONE ESTES MÉTODOS NO FINAL DA CLASSE (Antes do último "}"):
+    private void lancarNota() {
+        List<Pessoa> alunos = new ArrayList<>();
+        for(Pessoa p : ctx.pessoaDAO.listarTodos()) {
+            if(p instanceof Aluno) alunos.add(p);
+        }
+        if(alunos.isEmpty()) { JOptionPane.showMessageDialog(this, "Nenhum aluno cadastrado."); return; }
+        
+        Object[] alunosArray = alunos.stream().map(Pessoa::getNome).toArray();
+        String nomeAluno = (String) JOptionPane.showInputDialog(this, "Selecione o Aluno:", "Lançar Nota", 
+                JOptionPane.QUESTION_MESSAGE, null, alunosArray, alunosArray[0]);
+        if(nomeAluno == null) return;
+        
+        Aluno alunoSelecionado = (Aluno) alunos.stream()
+            .filter(a -> a.getNome().equals(nomeAluno)).findFirst().orElse(null);
+
+        List<Atividade> atividades = ctx.atividadeDAO.listarTodos();
+        if(atividades.isEmpty()) { JOptionPane.showMessageDialog(this, "Nenhuma atividade cadastrada."); return; }
+        
+        Object[] atvArray = atividades.stream().map(Atividade::getNome).toArray();
+        String nomeAtv = (String) JOptionPane.showInputDialog(this, "Selecione a Atividade:", "Lançar Nota", 
+                JOptionPane.QUESTION_MESSAGE, null, atvArray, atvArray[0]);
+        if(nomeAtv == null) return;
+        
+        Atividade atvSelecionada = atividades.stream()
+            .filter(a -> a.getNome().equals(nomeAtv)).findFirst().orElse(null);
+
+        String valorStr = JOptionPane.showInputDialog(this, "Digite a nota (Max: " + atvSelecionada.getValor() + "):");
+        if(valorStr == null) return;
+        
+        try {
+            float valor = Float.parseFloat(valorStr);
+            if(valor < 0 || valor > atvSelecionada.getValor()) {
+                JOptionPane.showMessageDialog(this, "Nota inválida! Deve ser entre 0 e " + atvSelecionada.getValor());
+                return;
+            }
+            Nota novaNota = new Nota(alunoSelecionado, atvSelecionada, valor, "");
+            ctx.notaDAO.salvar(novaNota);
+            JOptionPane.showMessageDialog(this, "Nota lançada com sucesso!");
+        } catch (NumberFormatException e) {
+            JOptionPane.showMessageDialog(this, "Digite um número válido.");
+        }
+    }
+
+    private void verBoletim() {
+        StringBuilder sb = new StringBuilder();
+        sb.append("--- BOLETIM GERAL ---\n\n");
+        List<Nota> notas = ctx.notaDAO.listarTodos();
+        
+        if (notas.isEmpty()) {
+            sb.append("Nenhuma nota lançada ainda.");
+        } else {
+            for(Nota n : notas) {
+                sb.append("Aluno: ").append(n.getAluno().getNome())
+                  .append(" | Atividade: ").append(n.getAtividade().getNome())
+                  .append(" | Nota: ").append(n.getValor())
+                  .append("\n");
+            }
+        }
+        
+        JTextArea textArea = new JTextArea(sb.toString());
+        textArea.setEditable(false);
+        JScrollPane scrollPane = new JScrollPane(textArea);
+        scrollPane.setPreferredSize(new Dimension(500, 400));
+        JOptionPane.showMessageDialog(this, scrollPane, "Boletim", JOptionPane.PLAIN_MESSAGE);
+    }

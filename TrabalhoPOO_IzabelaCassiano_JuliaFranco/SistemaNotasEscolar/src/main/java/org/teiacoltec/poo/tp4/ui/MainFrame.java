@@ -5,11 +5,11 @@ import org.teiacoltec.poo.tp4.*;
 import javax.swing.*;
 import java.awt.*;
 import java.util.Date;
+import java.util.List;
+import java.util.ArrayList;
 
-/**
- * Janela principal com menus básicos.
- */
 public class MainFrame extends JFrame {
+
     private final AppContext ctx;
 
     public MainFrame(AppContext ctx) {
@@ -18,13 +18,41 @@ public class MainFrame extends JFrame {
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLayout(new BorderLayout());
         setJMenuBar(criarMenu());
-        add(new JLabel("Bem-vindo(a) ao Sistema de Notas"), BorderLayout.CENTER);
+
+        JPanel painelPrincipal = new JPanel();
+        painelPrincipal.setLayout(new BoxLayout(painelPrincipal, BoxLayout.Y_AXIS));
+        painelPrincipal.setBorder(BorderFactory.createEmptyBorder(50, 50, 50, 50));
+
+        JLabel titulo = new JLabel("Sistema de Gestão Escolar");
+        titulo.setFont(new Font("Arial", Font.BOLD, 24));
+        titulo.setAlignmentX(Component.CENTER_ALIGNMENT);
+
+        String nomeUsuario = (ctx.autenticacao.getUsuarioLogado() != null)
+                ? ctx.autenticacao.getUsuarioLogado().getNome() : "Usuário";
+
+        JLabel subtitulo = new JLabel("Bem-vindo, " + nomeUsuario);
+        subtitulo.setFont(new Font("Arial", Font.PLAIN, 16));
+        subtitulo.setAlignmentX(Component.CENTER_ALIGNMENT);
+
+        JLabel info = new JLabel("Utilize o menu acima para gerenciar Turmas, Alunos e Notas.");
+        info.setAlignmentX(Component.CENTER_ALIGNMENT);
+
+        painelPrincipal.add(titulo);
+        painelPrincipal.add(Box.createRigidArea(new Dimension(0, 20)));
+        painelPrincipal.add(subtitulo);
+        painelPrincipal.add(Box.createRigidArea(new Dimension(0, 40)));
+        painelPrincipal.add(info);
+
+        add(painelPrincipal, BorderLayout.CENTER);
+
         pack();
+        setSize(800, 600);
         setLocationRelativeTo(null);
     }
 
     private JMenuBar criarMenu() {
         JMenuBar bar = new JMenuBar();
+
         JMenu usuarios = new JMenu("Usuários");
         JMenuItem listarUsuarios = new JMenuItem("Listar");
         listarUsuarios.addActionListener(e -> mostrarUsuarios());
@@ -49,9 +77,27 @@ public class MainFrame extends JFrame {
         atividades.add(listarAtividades);
         atividades.add(criarAtividade);
 
+        JMenu notas = new JMenu("Notas");
+        JMenuItem lancarNota = new JMenuItem("Lançar Nota");
+        lancarNota.addActionListener(e -> lancarNota());
+        JMenuItem boletim = new JMenuItem("Ver Boletim");
+        boletim.addActionListener(e -> verBoletim());
+        notas.add(lancarNota);
+        notas.add(boletim);
+
+        JMenu ferramentas = new JMenu("Ferramentas");
+        JMenuItem backupBd = new JMenuItem("Backup BD");
+        backupBd.addActionListener(e -> realizarBackup());
+        JMenuItem restaurarBd = new JMenuItem("Restaurar Último Backup");
+        restaurarBd.addActionListener(e -> restaurarBackup());
+        ferramentas.add(backupBd);
+        ferramentas.add(restaurarBd);
+
         bar.add(usuarios);
         bar.add(turmas);
         bar.add(atividades);
+        bar.add(notas);
+        bar.add(ferramentas);
         return bar;
     }
 
@@ -68,8 +114,13 @@ public class MainFrame extends JFrame {
         String matricula = JOptionPane.showInputDialog(this, "Matrícula:");
         String login = JOptionPane.showInputDialog(this, "Login:");
         String senha = JOptionPane.showInputDialog(this, "Senha:");
-        if (nome == null || login == null || senha == null) return;
-        if (ctx.pessoaDAO.buscarPorLogin(login) != null) { JOptionPane.showMessageDialog(this, "Login já existe", "Erro", JOptionPane.ERROR_MESSAGE); return; }
+        if (nome == null || login == null || senha == null) {
+            return;
+        }
+        if (ctx.pessoaDAO.buscarPorLogin(login) != null) {
+            JOptionPane.showMessageDialog(this, "Login já existe", "Erro", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
         Aluno a = new Aluno(nome, matricula, login, senha);
         ctx.pessoaDAO.salvar(a);
         JOptionPane.showMessageDialog(this, "Aluno criado: " + a.getNome());
@@ -104,10 +155,118 @@ public class MainFrame extends JFrame {
         String nome = JOptionPane.showInputDialog(this, "Nome da atividade:");
         String descricao = JOptionPane.showInputDialog(this, "Descrição:");
         float valor = 10f;
-        try { valor = Float.parseFloat(JOptionPane.showInputDialog(this, "Valor (pontos):", "10")); } catch (Exception ignored) {}
+        try {
+            valor = Float.parseFloat(JOptionPane.showInputDialog(this, "Valor (pontos):", "10"));
+        } catch (Exception ignored) {
+        }
         int novoId = ctx.atividadeDAO.listarTodos().stream().mapToInt(Atividade::getId).max().orElse(0) + 1;
         Atividade a = new Atividade(novoId, nome == null ? "Sem nome" : nome, descricao == null ? "" : descricao, new Date(), new Date(), valor);
         ctx.atividadeDAO.salvar(a);
         JOptionPane.showMessageDialog(this, "Atividade criada: " + a.toString());
+    }
+
+    private void lancarNota() {
+        List<Pessoa> alunos = new ArrayList<>();
+        for (Pessoa p : ctx.pessoaDAO.listarTodos()) {
+            if (p instanceof Aluno) {
+                alunos.add(p);
+            }
+        }
+        if (alunos.isEmpty()) {
+            JOptionPane.showMessageDialog(this, "Nenhum aluno cadastrado.");
+            return;
+        }
+
+        Object[] alunosArray = alunos.stream().map(Pessoa::getNome).toArray();
+        String nomeAluno = (String) JOptionPane.showInputDialog(this, "Selecione o Aluno:", "Lançar Nota",
+                JOptionPane.QUESTION_MESSAGE, null, alunosArray, alunosArray[0]);
+        if (nomeAluno == null) {
+            return;
+        }
+
+        Aluno alunoSelecionado = (Aluno) alunos.stream()
+                .filter(a -> a.getNome().equals(nomeAluno))
+                .findFirst()
+                .orElse(null);
+        if (alunoSelecionado == null) {
+            return;
+        }
+
+        List<Atividade> atividades = ctx.atividadeDAO.listarTodos();
+        if (atividades.isEmpty()) {
+            JOptionPane.showMessageDialog(this, "Nenhuma atividade cadastrada.");
+            return;
+        }
+
+        Object[] atvArray = atividades.stream().map(Atividade::getNome).toArray();
+        String nomeAtv = (String) JOptionPane.showInputDialog(this, "Selecione a Atividade:", "Lançar Nota",
+                JOptionPane.QUESTION_MESSAGE, null, atvArray, atvArray[0]);
+        if (nomeAtv == null) {
+            return;
+        }
+
+        Atividade atvSelecionada = atividades.stream()
+                .filter(a -> a.getNome().equals(nomeAtv))
+                .findFirst()
+                .orElse(null);
+        if (atvSelecionada == null) {
+            return;
+        }
+
+        String valorStr = JOptionPane.showInputDialog(this, "Digite a nota (Max: " + atvSelecionada.getValor() + "):");
+        if (valorStr == null) {
+            return;
+        }
+        try {
+            float valor = Float.parseFloat(valorStr);
+            if (valor < 0 || valor > atvSelecionada.getValor()) {
+                JOptionPane.showMessageDialog(this, "Nota inválida! Deve ser entre 0 e " + atvSelecionada.getValor());
+                return;
+            }
+            Nota novaNota = new Nota(alunoSelecionado, atvSelecionada, valor, "");
+            ctx.notaDAO.salvar(novaNota);
+            JOptionPane.showMessageDialog(this, "Nota lançada com sucesso!");
+        } catch (NumberFormatException e) {
+            JOptionPane.showMessageDialog(this, "Digite um número válido.");
+        }
+    }
+
+    private void verBoletim() {
+        StringBuilder sb = new StringBuilder();
+        sb.append("--- BOLETIM GERAL ---\n\n");
+        List<Nota> notas = ctx.notaDAO.listarTodos();
+        if (notas.isEmpty()) {
+            sb.append("Nenhuma nota lançada ainda.");
+        } else {
+            for (Nota n : notas) {
+                sb.append("Aluno: ").append(n.getAluno().getNome())
+                        .append(" | Atividade: ").append(n.getAtividade().getNome())
+                        .append(" | Nota: ").append(n.getValor())
+                        .append("\n");
+            }
+        }
+        JTextArea textArea = new JTextArea(sb.toString());
+        textArea.setEditable(false);
+        JScrollPane scrollPane = new JScrollPane(textArea);
+        scrollPane.setPreferredSize(new Dimension(500, 400));
+        JOptionPane.showMessageDialog(this, scrollPane, "Boletim", JOptionPane.PLAIN_MESSAGE);
+    }
+
+    private void realizarBackup() {
+        try {
+            java.io.File file = org.teiacoltec.poo.tp4.infra.BackupManager.backup();
+            JOptionPane.showMessageDialog(this, file == null ? "BD inexistente" : ("Backup criado em: " + file.getAbsolutePath()));
+        } catch (Exception ex) {
+            JOptionPane.showMessageDialog(this, "Falha ao criar backup: " + ex.getMessage(), "Erro", JOptionPane.ERROR_MESSAGE);
+        }
+    }
+
+    private void restaurarBackup() {
+        try {
+            java.io.File file = org.teiacoltec.poo.tp4.infra.BackupManager.restoreLatest();
+            JOptionPane.showMessageDialog(this, file == null ? "Nenhum backup encontrado" : ("BD restaurado de: " + file.getAbsolutePath()));
+        } catch (Exception ex) {
+            JOptionPane.showMessageDialog(this, "Falha ao restaurar backup: " + ex.getMessage(), "Erro", JOptionPane.ERROR_MESSAGE);
+        }
     }
 }

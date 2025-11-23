@@ -18,6 +18,11 @@ javac -d target\classes -cp src\main\java @sources.txt
 :: Limpa o arquivo temporário
 del sources.txt
 
+echo [2.5/3] Compilando testes...
+dir /s /B src\test\java\org\teiacoltec\poo\tp4\*.java > testsources.txt
+javac -d target\test-classes -cp target\classes;src\test\java @testsources.txt
+del testsources.txt
+
 if %errorlevel% neq 0 (
     echo.
     echo ERRO CRITICO: A compilacao falhou.
